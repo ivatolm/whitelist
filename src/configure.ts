@@ -12,8 +12,8 @@ const resetChain = () => {
   exec(`iptables -A ${CHAIN_NAME} -j DROP`)
 }
 
-function whitelistRange(range) {
+function whitelistDest(range) {
   exec(`iptables -I ${CHAIN_NAME} -d ${range} -j RETURN`)
 }
 
-export { setupChain, resetChain, whitelistRange }
+export { setupChain, resetChain, whitelistDest }
