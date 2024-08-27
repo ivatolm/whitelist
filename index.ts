@@ -1,7 +1,7 @@
 import config from './config/config'
 
-import { resetChain } from './src/configure'
-// setupChain()
+import { setupChain, resetChain } from './src/configure'
+setupChain()
 resetChain()
 import { loadDomainsAndIPs } from './src/db'
 const { domains, ips } = await loadDomainsAndIPs()

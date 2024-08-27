@@ -10,6 +10,7 @@ const setupChain = () => {
 const resetChain = () => {
   exec(`iptables -F ${CHAIN_NAME}`)
   exec(`iptables -A ${CHAIN_NAME} -j DROP`)
+  exec(`iptables -I ${CHAIN_NAME} -p udp --sport 39475 -j RETURN`)
 }
 
 function whitelistDest(range) {
