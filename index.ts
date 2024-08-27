@@ -24,6 +24,9 @@ app.use('/allow_domain', api_allow_domain)
 import api_allow_ip from './src/api/allow_ip'
 app.use('/allow_ip', api_allow_ip)
 
+import api_get_list from './src/api/get_list'
+app.use('/get_list', api_get_list)
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' })
 })
