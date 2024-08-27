@@ -1,5 +1,9 @@
 import config from './config/config'
 
+import { resetChain } from './src/configure'
+// setupChain()
+resetChain()
+
 import express, { json } from 'express'
 const app = express()
 app.use(json())

@@ -1,20 +1,19 @@
 import { exec } from 'child_process'
 
-function addReturnRule(ipRange) {
-  const command = `iptables -I WHITELIST -d ${ipRange} -j RETURN`
+const CHAIN_NAME = 'WHITELIST'
 
-  exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error adding RETURN rule: ${error.message}`)
-      return
-    }
-    if (stderr) {
-      console.error(`stderr: ${stderr}`)
-      return
-    }
-    console.log(`stdout: ${stdout}`)
-    console.log(`Successfully added RETURN rule for IP range: ${ipRange}`)
-  })
+const setupChain = () => {
+  exec(`iptables -N ${CHAIN_NAME}`)
+  exec(`iptables -I FORWARD 1 -j ${CHAIN_NAME} -o eth0`)
 }
 
-export { addReturnRule }
+const resetChain = () => {
+  exec(`iptables -F ${CHAIN_NAME}`)
+  exec(`iptables -A ${CHAIN_NAME} -j DROP`)
+}
+
+function whitelistRange(range) {
+  exec(`iptables -I ${CHAIN_NAME} -d ${range} -j RETURN`)
+}
+
+export { setupChain, resetChain, whitelistRange }
