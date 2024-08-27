@@ -4,8 +4,8 @@ import express, { json } from 'express'
 const app = express()
 app.use(json())
 
-import api_allow_ip from './src/api/allow_ip'
-app.use('/allow_ip', api_allow_ip)
+import api_allow_domain from './src/api/allow_domain'
+app.use('/allow_domain', api_allow_domain)
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' })
