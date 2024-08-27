@@ -1,12 +1,8 @@
 import Datastore from 'nedb'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 const db = new Datastore({
-  filename: path.join(__dirname, '/data/iptables.db'),
+  filename: path.join(process.cwd(), '/data/iptables.db'),
   autoload: true,
 })
 
