@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
 
 function addReturnRule(ipRange) {
-  const command = `iptables -I DOCKER-USER -s ${ipRange} -j RETURN`
+  const command = `iptables -I DOCKER-USER -d ${ipRange} -j RETURN`
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
