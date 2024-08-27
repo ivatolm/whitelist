@@ -10,4 +10,8 @@ RUN npm install
 
 COPY . .
 
+RUN mkdir -p /data
+
+VOLUME /data
+
 CMD [ "npm", "start" ]

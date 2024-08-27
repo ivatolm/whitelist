@@ -16,11 +16,11 @@ const asnToRanges = async (asn: number) => {
   return prefixes
 }
 
-const getIPRanges = async (domain: string) => {
+const domainToRanges = async (domain: string) => {
   const ip = (await dns.lookup(domain)).address
   const asn = await ipToASN(ip)
   const ranges = await asnToRanges(asn)
   return ranges
 }
 
-export { getIPRanges }
+export { domainToRanges }

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
-import { getIPRanges } from '../resolve'
-import { whitelistDest } from '../configure'
+import { whitelistDomain } from '../whitelist'
+import { saveDomain } from '../db'
 
 const router = Router()
 
@@ -11,19 +11,15 @@ router.get('/', async (req, res) => {
     return
   }
 
-  const domain = req.query.domain
+  const domain = req.query.domain as string
   try {
-    const ranges = await getIPRanges(domain as string)
-    for (const range of ranges) {
-      whitelistDest(range)
-    }
+    await whitelistDomain(domain)
+    await saveDomain(domain)
+    res.json({ success: true })
   }
   catch {
     res.json({ success: false })
-    return
   }
-
-  res.json({ success: true })
 })
 
 export default router

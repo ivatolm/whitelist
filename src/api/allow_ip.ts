@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
-import { whitelistDest } from '../configure'
+import { whitelistIP } from '../whitelist'
+import { saveIPAddress } from '../db'
 
 const router = Router()
 
@@ -10,16 +11,15 @@ router.get('/', async (req, res) => {
     return
   }
 
-  const ip = req.query.ip
+  const ip = req.query.ip as string
   try {
-    whitelistDest(ip)
+    await whitelistIP(ip)
+    await saveIPAddress(ip)
+    res.json({ success: true })
   }
   catch {
     res.json({ success: false })
-    return
   }
-
-  res.json({ success: true })
 })
 
 export default router

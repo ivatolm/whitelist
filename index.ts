@@ -3,6 +3,16 @@ import config from './config/config'
 import { resetChain } from './src/configure'
 // setupChain()
 resetChain()
+import { loadDomainsAndIPs } from './src/db'
+const { domains, ips } = await loadDomainsAndIPs()
+import { whitelistDomain, whitelistIP } from './src/whitelist'
+try {
+  ips.forEach(ip => whitelistIP(ip))
+  domains.forEach(domain => whitelistDomain(domain))
+}
+catch (error) {
+  console.error(`Cannot load entries from database: ${error}`)
+}
 
 import express, { json } from 'express'
 const app = express()
