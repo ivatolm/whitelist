@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
       const ranges = await domainToRanges(domain)
       for (const range of ranges) {
         content.push({
-          hostname: '',
-          ip: range,
+          hostname: range,
+          ip: '',
         })
       }
     }
