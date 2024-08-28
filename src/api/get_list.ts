@@ -3,18 +3,25 @@ import { Router } from 'express'
 import { writeFile } from 'fs/promises'
 import { loadDomainsAndIPs } from '../db'
 import path from 'path'
+import { domainToRanges } from '../resolve'
 
 const router = Router()
 
 router.get('/', async (req, res) => {
-  const filePath = path.join(process.cwd(), 'domains.json')
+  const filePath = path.join(process.cwd(), 'ranges.json')
 
   try {
+    const content = []
     const { domains } = await loadDomainsAndIPs()
-    const content = domains.map(domain => ({
-      hostname: domain,
-      ip: '',
-    }))
+    for (const domain of domains) {
+      const ranges = await domainToRanges(domain)
+      for (const range of ranges) {
+        content.push({
+          hostname: '',
+          ip: range,
+        })
+      }
+    }
     await writeFile(filePath, JSON.stringify(content, null, 2))
   }
   catch (error) {
