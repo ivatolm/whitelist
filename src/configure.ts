@@ -2,19 +2,27 @@ import { exec } from 'child_process'
 
 const CHAIN_NAME = 'WHITELIST'
 
+const rules = new Set()
+
+const addRule = (rule: string) => {
+  if (!rules.has(rule)) {
+    exec(rule)
+  }
+}
+
 const setupChain = () => {
-  exec(`iptables -N ${CHAIN_NAME}`)
-  exec(`iptables -I FORWARD 1 -j ${CHAIN_NAME} -o eth0`)
+  addRule(`iptables -N ${CHAIN_NAME}`)
+  addRule(`iptables -I FORWARD 1 -j ${CHAIN_NAME} -o eth0`)
 }
 
 const resetChain = () => {
-  exec(`iptables -F ${CHAIN_NAME}`)
-  exec(`iptables -A ${CHAIN_NAME} -j DROP`)
-  exec(`iptables -I ${CHAIN_NAME} -p udp --sport 39475 -j RETURN`)
+  addRule(`iptables -F ${CHAIN_NAME}`)
+  addRule(`iptables -A ${CHAIN_NAME} -j DROP`)
+  addRule(`iptables -I ${CHAIN_NAME} -p udp --sport 39475 -j RETURN`)
 }
 
-function whitelistDest(range) {
-  exec(`iptables -I ${CHAIN_NAME} -d ${range} -j RETURN`)
+function whitelistDest(range: string) {
+  addRule(`iptables -I ${CHAIN_NAME} -d ${range} -j RETURN`)
 }
 
 export { setupChain, resetChain, whitelistDest }
