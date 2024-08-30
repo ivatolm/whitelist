@@ -4,9 +4,18 @@ const CHAIN_NAME = 'WHITELIST'
 
 const rules = new Set()
 
+const isIPv6Rule = (rule: string): boolean => {
+  return rule.includes(':')
+}
+
 const addRule = (rule: string) => {
+  if (isIPv6Rule(rule)) {
+    return
+  }
+
   if (!rules.has(rule)) {
     exec(rule)
+    rules.add(rule)
   }
 }
 
