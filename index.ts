@@ -10,8 +10,7 @@ try {
   ips.forEach(ip => whitelistIP(ip))
   domains.forEach(async (domain) => {
     const ranges = await domainToRanges(domain)
-    const filtered = filterIPv4Ips(ranges)
-    whitelistIPs(filtered)
+    whitelistIPs(ranges)
   })
 }
 catch (error) {
@@ -30,7 +29,6 @@ app.use('/allow_ip', api_allow_ip)
 
 import api_get_list from './src/api/get_list'
 import { domainToRanges } from './src/resolve'
-import { filterIPv4Ips } from './src/filter'
 app.use('/get_list', api_get_list)
 
 app.use((req, res) => {
