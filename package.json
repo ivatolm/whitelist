@@ -4,6 +4,7 @@
     "start": "tsx ./index.ts"
   },
   "dependencies": {
+    "deep-equal": "^2.2.3",
     "express": "^4.19.2",
     "nedb": "^1.8.0",
     "yargs": "^17.7.2"
