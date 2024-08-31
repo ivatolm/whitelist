@@ -4,7 +4,7 @@ import { writeFile } from 'fs/promises'
 import { loadDomainsAndIPs } from '../db'
 import path from 'path'
 import { domainToRanges } from '../resolve'
-import { filterIPv4Ips, filterSame } from '../filter'
+import { filterIPv4Ips } from '../filter'
 
 const router = Router()
 
@@ -24,7 +24,20 @@ router.get('/', async (req, res) => {
         })
       }
     }
-    const uniqueContent = filterSame(content)
+    const uniqueContent = []
+    for (const newItem of content) {
+      let found = false
+      for (const oldItem of uniqueContent) {
+        if (newItem.hostname === oldItem.hostname) {
+          found = true
+          break
+        }
+      }
+      if (found) {
+        break
+      }
+      uniqueContent.push(newItem)
+    }
     await writeFile(filePath, JSON.stringify(uniqueContent, null, 2))
   }
   catch (error) {
