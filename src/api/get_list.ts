@@ -4,7 +4,7 @@ import { writeFile } from 'fs/promises'
 import { loadDomainsAndIPs } from '../db'
 import path from 'path'
 import { domainToRanges } from '../resolve'
-import { filterIPv4Ips } from '../filter'
+import { filterIPv4Ips, filterSame } from '../filter'
 
 const router = Router()
 
@@ -24,7 +24,8 @@ router.get('/', async (req, res) => {
         })
       }
     }
-    await writeFile(filePath, JSON.stringify(content, null, 2))
+    const uniqueContent = filterSame(content)
+    await writeFile(filePath, JSON.stringify(uniqueContent, null, 2))
   }
   catch (error) {
     res.status(500).send('Failed to generate a domains file')

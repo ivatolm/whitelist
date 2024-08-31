@@ -6,4 +6,8 @@ const filterIPv4Ips = (ips: string[]): string[] => {
   return ips.filter(x => isIPv4(x))
 }
 
-export { filterIPv4Ips }
+const filterSame = (x: any[]): any[] => {
+  return [...new Set(x)]
+}
+
+export { filterIPv4Ips, filterSame }
