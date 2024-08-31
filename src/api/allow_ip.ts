@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
   const ip = req.query.ip as string
   try {
     await whitelistIP(ip)
+
     await saveIPAddress(ip)
     res.json({ success: true })
   }

@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises'
 import { loadDomainsAndIPs } from '../db'
 import path from 'path'
 import { domainToRanges } from '../resolve'
+import { filterIPv4Ips } from '../filter'
 
 const router = Router()
 
@@ -15,7 +16,8 @@ router.get('/', async (req, res) => {
     const { domains } = await loadDomainsAndIPs()
     for (const domain of domains) {
       const ranges = await domainToRanges(domain)
-      for (const range of ranges) {
+      const filtered = filterIPv4Ips(ranges)
+      for (const range of filtered) {
         content.push({
           hostname: range,
           ip: '',
