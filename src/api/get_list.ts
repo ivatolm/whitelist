@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
       for (const range of ranges) {
         content.push({
           hostname: range,
-          ip: '',
+          ip: range,
         })
       }
     }
