@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
 import { whitelistIP } from '../whitelist'
-import { saveIPAddress } from '../db'
+import { saveIP } from '../db'
 
 const router = Router()
 
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
   try {
     await whitelistIP(ip)
 
-    await saveIPAddress(ip)
+    await saveIP(ip)
     res.json({ success: true })
   }
   catch {
