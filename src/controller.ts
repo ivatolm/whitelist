@@ -45,6 +45,10 @@ class Controller {
     await this.chainController.stop()
   }
 
+  getChainController() {
+    return this.chainController
+  }
+
   getIptablesController() {
     return this.iptablesController
   }

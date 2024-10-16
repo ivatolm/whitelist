@@ -1,7 +1,7 @@
 import { loadDomainsAndIPs } from './../db'
-import { whitelistIP, whitelistIPs } from './../whitelist'
 import { domainToRanges } from './../resolve'
 import Controller from '../controller'
+import IptablesController from './iptables_controller'
 
 /**
  * Role of the 'ChainController' is to manage traffic chain. At the moment
@@ -13,30 +13,58 @@ import Controller from '../controller'
  */
 class ChainController {
   readonly chainName: string
+  // TODO: Refactor and remove assertion
+  private iptablesCtrlRef!: IptablesController
+  private isBusy: boolean
 
   constructor() {
     this.chainName = 'WHITELIST'
+    this.isBusy = true
   }
 
   async start(controller: Controller) {
-    const iptablesCtrl = controller.getIptablesController()
-    iptablesCtrl.setupChain(this.chainName)
-    iptablesCtrl.resetChain(this.chainName)
-    const { domains, ips } = await loadDomainsAndIPs()
-    try {
-      ips.forEach(ip => whitelistIP(ip))
-      domains.forEach(async (domain) => {
-        const ranges = await domainToRanges(domain)
-        whitelistIPs(ranges)
-      })
-    }
-    catch (error) {
-      console.error(`Cannot load entries from database: ${error}`)
-    }
+    this.iptablesCtrlRef = controller.getIptablesController()
+    this.iptablesCtrlRef.setupChain(this.chainName)
+    this.iptablesCtrlRef.resetChain(this.chainName)
+    const { ips, domains } = await loadDomainsAndIPs()
+    ips.forEach(ip => this.whitelistIP(ip))
+    domains.forEach(domain => this.whitelistDomain(domain))
+    this.isBusy = false
   }
 
   async stop() {
     // nothing
+  }
+
+  #busyGuard(f: () => Promise<void>): () => Promise<boolean> {
+    return async () => {
+      if (this.isBusy) {
+        return false
+      }
+      this.isBusy = true
+      try {
+        await f()
+      }
+      finally {
+        this.isBusy = false
+      }
+      return true
+    }
+  }
+
+  async whitelistIP(ip: string): Promise<boolean> {
+    return this.#busyGuard(async () => {
+      this.iptablesCtrlRef.extendChain(this.chainName, ip)
+    })()
+  }
+
+  async whitelistDomain(domain: string) {
+    return this.#busyGuard(async () => {
+      const ips = await domainToRanges(domain)
+      for (const ip of ips) {
+        this.iptablesCtrlRef.extendChain(this.chainName, ip)
+      }
+    })()
   }
 }
 
