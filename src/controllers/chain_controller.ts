@@ -1,7 +1,7 @@
-import { setupChain, resetChain } from './../configure'
 import { loadDomainsAndIPs } from './../db'
 import { whitelistIP, whitelistIPs } from './../whitelist'
 import { domainToRanges } from './../resolve'
+import Controller from '../controller'
 
 /**
  * Role of the 'ChainController' is to manage traffic chain. At the moment
@@ -12,9 +12,16 @@ import { domainToRanges } from './../resolve'
  * 3. When request comes, update configuration and save change in database
  */
 class ChainController {
-  async start() {
-    setupChain()
-    resetChain()
+  readonly chainName: string
+
+  constructor() {
+    this.chainName = 'WHITELIST'
+  }
+
+  async start(controller: Controller) {
+    const iptablesCtrl = controller.getIptablesController()
+    iptablesCtrl.setupChain(this.chainName)
+    iptablesCtrl.resetChain(this.chainName)
     const { domains, ips } = await loadDomainsAndIPs()
     try {
       ips.forEach(ip => whitelistIP(ip))

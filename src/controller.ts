@@ -4,6 +4,7 @@ import api_allow_ip from './api/allow_ip'
 import api_get_list from './api/get_list'
 import config from './../config/config'
 import ChainController from './controllers/chain_controller'
+import IptablesController from './controllers/iptables_controller'
 
 /**
  * Role of the 'Controller' is to manage an application.
@@ -14,14 +15,18 @@ import ChainController from './controllers/chain_controller'
  */
 class Controller {
   readonly chainController: ChainController
+  readonly iptablesController: IptablesController
 
   constructor() {
     this.chainController = new ChainController()
+    this.iptablesController = new IptablesController()
   }
 
   async startServices() {
+    // Iptables controller
+    await this.iptablesController.start(this)
     // Chain controller
-    await this.chainController.start()
+    await this.chainController.start(this)
     // Api controller
     const app = express()
     app.use(json())
@@ -38,6 +43,10 @@ class Controller {
 
   async stopServices() {
     await this.chainController.stop()
+  }
+
+  getIptablesController() {
+    return this.iptablesController
   }
 }
 
