@@ -3,6 +3,8 @@ import { domainToRanges } from './../resolve'
 import Controller from '../controller'
 import IptablesController from './iptables_controller'
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 /**
  * Role of the 'ChainController' is to manage traffic chain. At the moment
  * traffic is filtered via 'iptables'.
@@ -13,23 +15,38 @@ import IptablesController from './iptables_controller'
  */
 class ChainController {
   readonly chainName: string
+  readonly whitelisted: Set<string>
   // TODO: Refactor and remove assertion
   private iptablesCtrlRef!: IptablesController
   private isBusy: boolean
 
   constructor() {
     this.chainName = 'WHITELIST'
-    this.isBusy = true
+    this.whitelisted = new Set()
+    this.isBusy = false
   }
 
   async start(controller: Controller) {
     this.iptablesCtrlRef = controller.getIptablesController()
     this.iptablesCtrlRef.setupChain(this.chainName)
     this.iptablesCtrlRef.resetChain(this.chainName)
+    console.log('Importing configuration from the database...')
     const { ips, domains } = await loadDomainsAndIPs()
-    ips.forEach(ip => this.whitelistIP(ip))
-    domains.forEach(domain => this.whitelistDomain(domain))
-    this.isBusy = false
+    ips.forEach(async (ip) => {
+      let ok
+      do {
+        ok = await this.whitelistIP(ip)
+        await wait(1000)
+      } while (!ok)
+    })
+    domains.forEach(async (domain) => {
+      let ok
+      do {
+        ok = await this.whitelistDomain(domain)
+        await wait(1000)
+      } while (!ok)
+    })
+    console.log('Importing configuration from the database done')
   }
 
   async stop() {
@@ -55,6 +72,7 @@ class ChainController {
   async whitelistIP(ip: string): Promise<boolean> {
     return this.#busyGuard(async () => {
       this.iptablesCtrlRef.extendChain(this.chainName, ip)
+      this.whitelisted.add(ip)
     })()
   }
 
@@ -63,8 +81,13 @@ class ChainController {
       const ips = await domainToRanges(domain)
       for (const ip of ips) {
         this.iptablesCtrlRef.extendChain(this.chainName, ip)
+        this.whitelisted.add(ip)
       }
     })()
+  }
+
+  getWhitelistedIPs(): Set<string> {
+    return this.whitelisted
   }
 }
 
