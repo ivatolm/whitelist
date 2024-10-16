@@ -1,36 +1,27 @@
-import { setupChain, resetChain } from './configure'
-import { loadDomainsAndIPs } from './db'
-import { whitelistIP, whitelistIPs } from './whitelist'
-import { domainToRanges } from './resolve'
 import express, { json } from 'express'
 import api_allow_domain from './api/allow_domain'
 import api_allow_ip from './api/allow_ip'
 import api_get_list from './api/get_list'
 import config from './../config/config'
+import ChainController from './controllers/chain_controller'
 
 /**
  * Role of the 'Controller' is to manage an application.
- * It has a few responsabilities:
+ * It has a few responsibilities:
  * 1. Start all services at startup
  * 2. Support service communication
  * 3. Stop services at shutdown
  */
 class Controller {
+  readonly chainController: ChainController
+
+  constructor() {
+    this.chainController = new ChainController()
+  }
+
   async startServices() {
     // Chain controller
-    setupChain()
-    resetChain()
-    const { domains, ips } = await loadDomainsAndIPs()
-    try {
-      ips.forEach(ip => whitelistIP(ip))
-      domains.forEach(async (domain) => {
-        const ranges = await domainToRanges(domain)
-        whitelistIPs(ranges)
-      })
-    }
-    catch (error) {
-      console.error(`Cannot load entries from database: ${error}`)
-    }
+    await this.chainController.start()
     // Api controller
     const app = express()
     app.use(json())
@@ -43,6 +34,10 @@ class Controller {
     app.listen(config.port, () => {
       console.log(`Server running on port ${config.port}`)
     })
+  }
+
+  async stopServices() {
+    await this.chainController.stop()
   }
 }
 
