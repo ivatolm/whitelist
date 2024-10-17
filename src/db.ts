@@ -18,16 +18,9 @@ async function openDatabase() {
   return db
 }
 
-// async function closeDatabase(db: sqlite3.Database) {
-//   await db.close((err) => {
-//     if (err) {
-//       console.error('Error closing the database:', err.message)
-//     }
-//     else {
-//       console.log('Database connection closed.')
-//     }
-//   })
-// }
+async function closeDatabase() {
+  await db.close()
+}
 
 async function saveIP(ip: string) {
   await db.run('INSERT INTO ips (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [ip])
@@ -47,4 +40,4 @@ async function loadDomainsAndIPs() {
 
 const db = await openDatabase()
 
-export { saveIP, saveDomain, loadDomainsAndIPs }
+export { saveIP, saveDomain, loadDomainsAndIPs, closeDatabase }
