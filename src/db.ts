@@ -4,7 +4,7 @@ import { open } from 'sqlite'
 
 async function openDatabase() {
   const db = await open({
-    filename: path.join(process.cwd(), './data.db'),
+    filename: path.join(process.cwd(), './data/data.db'),
     driver: sqlite3.Database,
   })
   await db.exec(`
