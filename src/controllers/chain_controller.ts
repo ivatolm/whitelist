@@ -42,18 +42,18 @@ class ChainController {
     console.log('Importing configuration from the database...')
     const { ips, domains } = await loadDomainsAndIPs()
     ips.forEach(async (ip) => {
-      let ok
+      let result: WhitelistResult
       do {
-        ok = await this.whitelistIP(ip)
+        result = await this.whitelistIP(ip)
         await wait(1000)
-      } while (!ok)
+      } while (result === WhitelistResult.BUSY)
     })
     domains.forEach(async (domain) => {
-      let ok
+      let result: WhitelistResult
       do {
-        ok = await this.whitelistDomain(domain)
+        result = await this.whitelistDomain(domain)
         await wait(1000)
-      } while (!ok)
+      } while (result === WhitelistResult.BUSY)
     })
     console.log('Importing configuration from the database done')
   }
