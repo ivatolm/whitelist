@@ -2,8 +2,13 @@ import { loadDomainsAndIPs } from './../db'
 import { domainToRanges } from './../resolve'
 import Controller from '../controller'
 import IptablesController from './iptables_controller'
+import { wait } from '../utils'
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+enum WhitelistResult {
+  OK = 0,
+  BUSY,
+  ERROR,
+}
 
 /**
  * Role of the 'ChainController' is to manage traffic chain. At the moment
@@ -53,30 +58,32 @@ class ChainController {
     // nothing
   }
 
-  #busyGuard(f: () => Promise<void>): () => Promise<boolean> {
+  #busyGuard(f: () => Promise<void>): () => Promise<WhitelistResult> {
     return async () => {
+      let res = WhitelistResult.OK
       if (this.isBusy) {
-        return false
+        return WhitelistResult.BUSY
       }
       this.isBusy = true
       try {
         await f()
       }
-      finally {
-        this.isBusy = false
+      catch {
+        res = WhitelistResult.ERROR
       }
-      return true
+      this.isBusy = false
+      return res
     }
   }
 
-  async whitelistIP(ip: string): Promise<boolean> {
+  async whitelistIP(ip: string): Promise<WhitelistResult> {
     return this.#busyGuard(async () => {
       this.iptablesCtrlRef.extendChain(this.chainName, ip)
       this.whitelisted.add(ip)
     })()
   }
 
-  async whitelistDomain(domain: string) {
+  async whitelistDomain(domain: string): Promise<WhitelistResult> {
     return this.#busyGuard(async () => {
       const ips = await domainToRanges(domain)
       for (const ip of ips) {
@@ -92,3 +99,4 @@ class ChainController {
 }
 
 export default ChainController
+export { WhitelistResult }

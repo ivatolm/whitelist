@@ -1,10 +1,11 @@
 import express, { Express, json } from 'express'
 import Controller from '../controller'
 import { saveDomain, saveIP } from '../db'
-import ChainController from './chain_controller'
+import ChainController, { WhitelistResult } from './chain_controller'
 import { writeFile } from 'fs/promises'
 import path from 'path'
 import config from '../../config/config'
+import { wait } from '../utils'
 
 /**
  * Role of the 'ApiController' is to manage API requests.
@@ -46,14 +47,22 @@ class ApiController {
       }
 
       const ip = req.query.ip as string
-      try {
-        await controller.whitelistIP(ip)
-        await saveIP(ip)
-        res.json({ success: true })
-      }
-      catch {
-        res.json({ success: false })
-      }
+
+      let result: WhitelistResult
+      do {
+        result = await controller.whitelistIP(ip)
+        if (result === WhitelistResult.ERROR) {
+          res.json({ success: false })
+          return
+        }
+        if (result === WhitelistResult.OK) {
+          break
+        }
+        await wait(1000)
+      } while (result === WhitelistResult.BUSY)
+
+      await saveIP(ip)
+      res.json({ success: true })
     })
   }
 
@@ -65,14 +74,22 @@ class ApiController {
       }
 
       const domain = req.query.domain as string
-      try {
-        await controller.whitelistDomain(domain)
-        await saveDomain(domain)
-        res.json({ success: true })
-      }
-      catch {
-        res.json({ success: false })
-      }
+
+      let result: WhitelistResult
+      do {
+        result = await controller.whitelistDomain(domain)
+        if (result === WhitelistResult.ERROR) {
+          res.json({ success: false })
+          return
+        }
+        if (result === WhitelistResult.OK) {
+          break
+        }
+        await wait(1000)
+      } while (result === WhitelistResult.BUSY)
+
+      await saveDomain(domain)
+      res.json({ success: true })
     })
   }
 
