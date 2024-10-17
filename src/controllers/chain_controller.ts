@@ -21,6 +21,8 @@ enum WhitelistResult {
 class ChainController {
   readonly chainName: string
   readonly whitelisted: Set<string>
+  readonly whitelistedIPs: Set<string>
+  readonly whitelistedDomains: Set<string>
   // TODO: Refactor and remove assertion
   private iptablesCtrlRef!: IptablesController
   private isBusy: boolean
@@ -28,6 +30,8 @@ class ChainController {
   constructor() {
     this.chainName = 'WHITELIST'
     this.whitelisted = new Set()
+    this.whitelistedIPs = new Set()
+    this.whitelistedDomains = new Set()
     this.isBusy = false
   }
 
@@ -80,6 +84,7 @@ class ChainController {
     return this.#busyGuard(async () => {
       this.iptablesCtrlRef.extendChain(this.chainName, ip)
       this.whitelisted.add(ip)
+      this.whitelistedIPs.add(ip)
     })()
   }
 
@@ -90,11 +95,20 @@ class ChainController {
         this.iptablesCtrlRef.extendChain(this.chainName, ip)
         this.whitelisted.add(ip)
       }
+      this.whitelistedDomains.add(domain)
     })()
   }
 
-  getWhitelistedIPs(): Set<string> {
+  getWhitelistRanges(): Set<string> {
     return this.whitelisted
+  }
+
+  getWhitelistedIPs(): Set<string> {
+    return this.whitelistedIPs
+  }
+
+  getWhitelistedDomains(): Set<string> {
+    return this.whitelistedDomains
   }
 }
 

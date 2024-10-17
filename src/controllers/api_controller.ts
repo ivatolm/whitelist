@@ -27,6 +27,8 @@ class ApiController {
     this.registerAllowIP(chainCtrlRef)
     this.registerAllowDomain(chainCtrlRef)
     this.registerGetList(chainCtrlRef)
+    this.registerGetIPs(chainCtrlRef)
+    this.registerGetDomains(chainCtrlRef)
     this.api.use((req, res) => {
       res.status(404).json({ error: 'Route not found' })
     })
@@ -97,7 +99,7 @@ class ApiController {
     this.api.get('/get_list', async (req, res) => {
       const filePath = path.join(process.cwd(), 'ranges.json')
 
-      const whitelistedIPs = [...controller.getWhitelistedIPs()]
+      const whitelistedIPs = [...controller.getWhitelistRanges()]
       const entries = whitelistedIPs.map(range => ({
         hostname: range,
         ip: range,
@@ -112,6 +114,20 @@ class ApiController {
       }
 
       res.download(filePath)
+    })
+  }
+
+  registerGetIPs(controller: ChainController) {
+    this.api.get('/get_ips', async (req, res) => {
+      const ips = controller.getWhitelistedIPs()
+      res.json({ success: true, ips: [...ips] })
+    })
+  }
+
+  registerGetDomains(controller: ChainController) {
+    this.api.get('/get_domains', async (req, res) => {
+      const domains = controller.getWhitelistedDomains()
+      res.json({ success: true, domains: [...domains] })
     })
   }
 }
