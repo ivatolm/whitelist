@@ -23,7 +23,7 @@ class IptablesController {
     if (this.rules.has(rule))
       return
 
-    // exec(rule)
+    exec(rule)
     this.rules.add(rule)
   }
 
