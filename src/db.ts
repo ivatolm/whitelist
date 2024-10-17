@@ -30,11 +30,11 @@ async function openDatabase() {
 // }
 
 async function saveIP(ip: string) {
-  await db.run('INSERT INTO ips (name) VALUES (?)', [ip])
+  await db.run('INSERT INTO ips (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [ip])
 }
 
 async function saveDomain(domain: string) {
-  await db.run('INSERT INTO domains (name) VALUES (?)', [domain])
+  await db.run('INSERT INTO domains (name) VALUES (?) ON CONFLICT (name) DO NOTHING', [domain])
 }
 
 async function loadDomainsAndIPs() {
